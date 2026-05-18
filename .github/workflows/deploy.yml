@@ -13,16 +13,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install lftp
+        run: sudo apt-get install -y lftp
+
       - name: Deploy via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
-          local-dir: ./
-          server-dir: ./nervensystem-check/
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
+        run: |
+          lftp -u "${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}" \
+            -e "set ftp:passive-mode yes; \
+                set net:timeout 30; \
+                set net:max-retries 3; \
+                mirror -R --delete \
+                  --exclude '^\.git' \
+                  --exclude '^\.github' \
+                  ./ /nervensystem-check/; \
+                quit" \
+            ftp://${{ secrets.FTP_SERVER }}
