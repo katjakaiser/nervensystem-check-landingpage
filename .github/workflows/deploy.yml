@@ -22,7 +22,8 @@ jobs:
             -e "set ftp:passive-mode yes; \
                 set net:timeout 30; \
                 set net:max-retries 3; \
-                mirror -R --delete \
+                debug 3; \
+                mirror -R --delete --verbose \
                   --exclude '^\.git' \
                   --exclude '^\.github' \
                   ./ /nervensystem-check/; \
